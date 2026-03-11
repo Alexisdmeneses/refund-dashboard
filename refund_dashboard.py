@@ -77,9 +77,20 @@ def parse_list_col(series):
 
 def parse_date_col(series):
     def _clean(v):
-        if pd.isna(v): return pd.NaT
+        try:
+            if v is None: return pd.NaT
+            if pd.isna(v): return pd.NaT
+        except Exception:
+            pass
         s = str(v).strip()
-        # Remove timezone suffix like "
+        s = re.sub(r"(\d+)(st|nd|rd|th)", r"\1", s)
+        s = re.sub(r"\s[+-]\d{2}:\d{2}$", "", s)
+        try:
+            return pd.to_datetime(s, dayfirst=False)
+        except Exception:
+            return pd.NaT
+    result = series.apply(_clean)
+    return pd.to_datetime(result, errors="coerce")
 
 @st.cache_data
 def load_data(file):
@@ -127,6 +138,7 @@ def delta_html(cur_val, prev_val):
     cls = "delta-up" if chg >= 0 else "delta-down"
     arrow = "▲" if chg >= 0 else "▼"
     return f'<span class="{cls}">{arrow} {abs(chg):.1f}% vs prev month</span>'
+
 
 # Block 4 — metrics + charts
 with st.sidebar:
@@ -439,4 +451,5 @@ with st.expander("🔍 View raw data"):
         ]),
         use_container_width=True, height=360
     )
+
 
