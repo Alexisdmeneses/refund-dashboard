@@ -65,16 +65,14 @@ MONTH_NAMES = {1:"Jan",2:"Feb",3:"Mar",4:"Apr",5:"May",6:"Jun",
 PALETTE = ["#7c6af7","#06b6d4","#f472b6","#4ade80","#fb923c",
            "#a78bfa","#38bdf8","#e879f9","#86efac","#fbbf24"]
 
-def parse_date_col(series):
+def parse_list_col(series):
     def _clean(v):
-        if pd.isna(v): return pd.NaT
-        s = str(v).strip()
-        s = re.sub(r"(\d+)(st|nd|rd|th)", r"\1", s)
-        s = re.sub(r"\s[+-]\d{2}:\d{2}$", "", s)
         try:
-            return pd.to_datetime(s, dayfirst=False)
-        except:
-            return pd.NaT
+            if v is None: return ""
+            if pd.isna(v): return ""
+        except Exception:
+            pass
+        return str(v).strip().strip("[]")
     return series.apply(_clean)
 
 def parse_date_col(series):
@@ -441,3 +439,4 @@ with st.expander("🔍 View raw data"):
         ]),
         use_container_width=True, height=360
     )
+
